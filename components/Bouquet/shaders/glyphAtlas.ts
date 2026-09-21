@@ -23,6 +23,15 @@ export async function whenFontsReady(fontFamily: string): Promise<void> {
 }
 
 /**
+ * Symbol-font fallbacks appended to the primary mono font: Geist Mono may lack
+ * the tender glyphs (♡ ✿ ❀), and Canvas2D does per-glyph fallback at raster
+ * time. Note: `document.fonts.load` only validates the FIRST family, so a
+ * visual atlas check (no `.notdef` boxes) is required after building.
+ */
+export const ATLAS_FONT_FALLBACKS =
+  '"Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols 2", monospace';
+
+/**
  * Builds a single-row glyph atlas on a Canvas2D surface: `ramp.length`
  * cells, one glyph each, white on transparent. The shader reads each
  * cell's alpha channel as the glyph mask.
@@ -39,7 +48,7 @@ export function buildGlyphAtlas(ramp: string, fontFamily: string, cellPx = 64): 
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = `${Math.floor(cellPx * 0.85)}px ${fontFamily}`;
+  ctx.font = `${Math.floor(cellPx * 0.85)}px ${fontFamily}, ${ATLAS_FONT_FALLBACKS}`;
   Array.from(ramp).forEach((ch, i) => {
     ctx.fillText(ch, i * cellPx + cellPx / 2, cellPx / 2 + cellPx * 0.03);
   });

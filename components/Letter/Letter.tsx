@@ -30,9 +30,9 @@ export default function Letter({ growthStarted, onDismiss, hidden }: LetterProps
         hidden ? "pointer-events-none translate-y-6 opacity-0" : "opacity-100"
       }`}
     >
-      <div className="relative flex max-h-[86vh] w-full max-w-xl flex-col overflow-hidden rounded-xl border border-yellow-200/20 bg-black/75 font-mono text-sm leading-relaxed text-yellow-50/90 shadow-[0_0_60px_rgba(234,179,8,0.12)] backdrop-blur-md sm:text-base">
+      <div className="relative flex max-h-[86vh] w-full max-w-xl flex-col overflow-hidden rounded-xl border border-stone-200 bg-[#fffdf7]/95 text-sm leading-relaxed text-stone-700 shadow-[0_12px_40px_rgba(58,50,38,0.10)] backdrop-blur-md sm:text-base">
         <div className="overflow-y-auto px-8 py-8">
-          <h1 className="mb-6 text-lg font-semibold text-yellow-300 sm:text-xl">
+          <h1 className="mb-6 text-lg font-semibold text-amber-800 sm:text-xl">
             {start < 0 ? null : (
               <Typewriter
                 text={letterTitle}
@@ -66,15 +66,15 @@ export default function Letter({ growthStarted, onDismiss, hidden }: LetterProps
         </div>
 
         <div
-          className={`flex items-center justify-between border-t border-yellow-200/10 px-6 py-4 transition-opacity duration-500 ${
+          className={`flex items-center justify-between border-t border-stone-200 px-6 py-4 transition-opacity duration-500 ${
             allTyped ? "opacity-100" : "opacity-0"
           }`}
         >
-          <span className="text-xs text-yellow-200/50">21 de septiembre</span>
+          <span className="text-xs text-stone-400">21 de septiembre</span>
           <button
             type="button"
             onClick={onDismiss}
-            className="cursor-pointer rounded-lg border border-yellow-300/40 bg-yellow-300/10 px-4 py-2 text-sm text-yellow-200 transition hover:bg-yellow-300/20 hover:text-yellow-100"
+            className="cursor-pointer rounded-lg border border-amber-300 bg-amber-100/70 px-4 py-2 text-sm text-amber-800 transition hover:bg-amber-200/70 hover:text-amber-900"
           >
             Ver las flores 🌻
           </button>

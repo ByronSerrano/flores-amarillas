@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #000000;
-  --foreground: #ededed;
+  --background: #fdf6ec; /* paper cream — keep in sync with `paper` in constants/flowerConfig.ts */
+  --foreground: #3a3226; /* warm dark ink */
 }
 
 @theme inline {

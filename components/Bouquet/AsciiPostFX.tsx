@@ -24,7 +24,7 @@ const cfg = flowerConfig;
  *   1. renders the live scene into a low-res WebGLRenderTarget
  *      (one texel per ASCII cell), then
  *   2. renders a full-screen quad with the asciify ShaderMaterial
- *      (glyphs + growth + CRT) to the screen.
+ *      (tender glyphs + growth, ink composited over paper) to the screen.
  */
 export default function AsciiPostFX({ growthRef, isMobile, fontFamily }: AsciiPostFXProps) {
   const size = useThree((s) => s.size);
@@ -63,24 +63,21 @@ export default function AsciiPostFX({ growthRef, isMobile, fontFamily }: AsciiPo
           uScene: { value: rt.texture },
           uAtlas: { value: atlas.texture },
           uGrid: { value: new THREE.Vector2(1, 1) },
-          uRes: { value: new THREE.Vector2(1, 1) },
-          uTime: { value: 0 },
           uGrowth: { value: 0 },
-          uGlitch: { value: 0 },
-          uScanline: { value: cfg.crt.scanlineIntensity },
-          uCA: { value: cfg.crt.chromaticAberration },
           uRamp: { value: atlas.count },
+          uPaper: { value: new THREE.Color(cfg.paper) },
+          uInk: { value: new THREE.Color(cfg.inkColor) },
+          uInkDarken: { value: cfg.inkDarken },
         },
       }),
     [rt, atlas],
   );
   useEffect(() => () => material.dispose(), [material]);
 
-  // Grid/resolution are updated here, not in the useMemo above (R-4).
+  // Grid is updated here, not in the useMemo above (R-4).
   useEffect(() => {
     material.uniforms.uGrid.value.set(cols, rows);
-    material.uniforms.uRes.value.set(size.width, size.height);
-  }, [material, cols, rows, size.width, size.height]);
+  }, [material, cols, rows]);
 
   // The render loop mutates uniforms; go through a ref set in an effect
   // so the hooks immutability rule sees no render-phase capture.
@@ -107,26 +104,10 @@ export default function AsciiPostFX({ growthRef, isMobile, fontFamily }: AsciiPo
 
   const quadCam = useMemo(() => new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), []);
 
-  const glitch = useRef({ active: false, until: 0 });
-
-  useFrame((state, delta) => {
+  useFrame((state) => {
     const material = materialRef.current;
     if (!material) return;
-    const u = material.uniforms;
-    u.uTime.value = state.clock.elapsedTime;
-    u.uGrowth.value = growthRef.current;
-
-    const g = glitch.current;
-    if (g.active) {
-      u.uGlitch.value = 1;
-      if (state.clock.elapsedTime > g.until) g.active = false;
-    } else {
-      u.uGlitch.value = 0;
-      if (Math.random() < cfg.crt.glitchChance * delta) {
-        g.active = true;
-        g.until = state.clock.elapsedTime + cfg.crt.glitchDuration;
-      }
-    }
+    material.uniforms.uGrowth.value = growthRef.current;
 
     // 1) scene -> low-res RT
     state.gl.setRenderTarget(rt);

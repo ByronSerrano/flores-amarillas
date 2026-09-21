@@ -29,7 +29,7 @@ function FlowerHead({ count }: { count: number }) {
     const q = new THREE.Quaternion();
     const zAxis = new THREE.Vector3(0, 0, 1);
     const pos = new THREE.Vector3();
-    const scale = new THREE.Vector3(0.9, 2.2, 1);
+    const scale = new THREE.Vector3(1.3, 1.6, 1);
     for (let i = 0; i < count; i++) {
       const a = (i / count) * Math.PI * 2;
       q.setFromAxisAngle(zAxis, a);
@@ -190,7 +190,7 @@ export default function BouquetScene({ isMobile, growthDone }: BouquetSceneProps
     <>
       <ambientLight intensity={1.0} />
       <pointLight position={[3, 4, 5]} intensity={140} color="#fff2c4" />
-      <pointLight position={[-4, 1, 2]} intensity={50} color="#9db8ff" />
+      <pointLight position={[-4, 1, 2]} intensity={40} color="#ffe9b3" />
 
       <group scale={isMobile ? cfg.render.mobileBouquetScale : 1}>
         {/* Vase */}

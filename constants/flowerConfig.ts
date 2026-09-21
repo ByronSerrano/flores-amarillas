@@ -4,8 +4,9 @@
  */
 
 export const flowerConfig = {
-  /** ASCII glyph ramp: dark/empty → bright/dense. Index maps to luma. */
-  asciiRamp: " .·:;=+*#%@",
+  /** ASCII glyph ramp: sparse/empty → dense/tender. Index maps to density
+   *  (darker scene pixel = denser glyph). Composite lives in asciify.ts. */
+  asciiRamp: " ·∘○◌♡✿❀❁❤",
 
   /**
    * ASCII grid sizing (R-4): the grid is derived from the container size
@@ -39,7 +40,7 @@ export const flowerConfig = {
     proximityTilt: 0.18,
   },
 
-  /** Pollen particles per tier. Boosted brightness so they survive the low-res ASCII sampling (R-5). */
+  /** Pollen particles per tier. */
   pollen: {
     desktop: { count: 180, size: 0.04 },
     mobile: { count: 100, size: 0.045 },
@@ -51,24 +52,23 @@ export const flowerConfig = {
 
   /** Bouquet shape. `petalsPerFlower` is scaled down on mobile. */
   bouquet: {
-    flowers: 7,
-    petalsPerFlower: 14,
-    petalsPerFlowerMobile: 9,
-    petalColor: "#ffd94a",
-    petalCenterColor: "#9a6a10",
+    flowers: 9,
+    petalsPerFlower: 18,
+    petalsPerFlowerMobile: 12,
+    petalColor: "#ffc857",
+    petalCenterColor: "#a8721d",
     stemColor: "#7fae5e",
     vaseColor: "#9a7c52",
     leafColor: "#79b062",
   },
 
-  /** CRT / glitch look, folded into the ASCII shader. */
-  crt: {
-    scanlineIntensity: 0.22,
-    chromaticAberration: 0.0015,
-    /** Probability per second of a glitch burst, and its duration. */
-    glitchChance: 0.5,
-    glitchDuration: 0.12,
-  },
+  /** Light-mode paper & ink. `paper` must stay in sync with `--background`
+   *  in app/globals.css (no TS→CSS import exists). */
+  paper: "#fdf6ec",
+  /** How strongly dense glyphs darken toward the warm ink color
+   *  (0 = keep scene tint, 1 = flat ink color). */
+  inkDarken: 0.6,
+  inkColor: "#3a3226",
 
   /** Render tuning. `cameraZMobile` + bouquet scale keep the fan in frame on portrait. */
   render: {

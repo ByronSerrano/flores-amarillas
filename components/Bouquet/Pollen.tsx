@@ -27,8 +27,9 @@ function mulberry32(seed: number): () => number {
 
 /**
  * Pollen motes: a single Points mesh drifting upward with sinusoidal
- * side-wobble, respawning at the bottom. Additive + bright so the
- * particles survive the low-res luminance sampling of the ASCII pass.
+ * side-wobble, respawning at the bottom. Normal blending + warm gold so
+ * the specks read against the cream paper (additive brightening is
+ * invisible on a light background).
  */
 export default function Pollen({ count, size, active }: PollenProps) {
   const pointsRef = useRef<THREE.Points>(null!);
@@ -80,10 +81,10 @@ export default function Pollen({ count, size, active }: PollenProps) {
     <points ref={pointsRef} geometry={geometry} visible={active} frustumCulled={false}>
       <pointsMaterial
         size={size}
-        color="#e6d382"
+        color="#d4a94e"
         transparent
         opacity={0.95}
-        blending={THREE.AdditiveBlending}
+        blending={THREE.NormalBlending}
         depthWrite={false}
         sizeAttenuation
       />

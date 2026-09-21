@@ -48,7 +48,7 @@ export default function Bouquet() {
   }, [font.ready, start]);
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-black">
+    <div className="fixed inset-0 overflow-hidden bg-background">
       <Canvas
         dpr={flowerConfig.render.dpr}
         camera={{
@@ -61,7 +61,7 @@ export default function Bouquet() {
         }}
         gl={{ antialias: false, powerPreference: "high-performance" }}
       >
-        <color attach="background" args={["#050505"]} />
+        <color attach="background" args={[flowerConfig.paper]} />
         {font.ready && (
           <>
             <BouquetScene isMobile={isMobile} growthDone={done} />
@@ -90,7 +90,7 @@ export default function Bouquet() {
         <button
           type="button"
           onClick={() => setLetterHidden(false)}
-          className="cursor-pointer rounded-lg border border-yellow-300/30 bg-black/60 px-4 py-2 font-mono text-sm text-yellow-200/90 backdrop-blur transition hover:border-yellow-300/60 hover:text-yellow-100"
+          className="cursor-pointer rounded-lg border border-stone-300 bg-white/70 px-4 py-2 text-sm text-stone-600 backdrop-blur transition hover:border-stone-400 hover:text-stone-800"
         >
           Ver la carta ✉️
         </button>
@@ -101,7 +101,7 @@ export default function Bouquet() {
         type="button"
         onClick={replay}
         aria-label="Repetir animación"
-        className="absolute top-4 right-4 z-30 cursor-pointer rounded-lg border border-yellow-300/20 bg-black/50 px-3 py-1.5 font-mono text-xs text-yellow-200/60 backdrop-blur transition hover:border-yellow-300/50 hover:text-yellow-100"
+        className="absolute top-4 right-4 z-30 cursor-pointer rounded-lg border border-stone-300 bg-white/70 px-3 py-1.5 text-xs text-stone-600 backdrop-blur transition hover:border-stone-400 hover:text-stone-800"
       >
         replay ✨
       </button>
