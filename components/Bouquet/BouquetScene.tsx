@@ -265,15 +265,18 @@ export default function BouquetScene({ isMobile, growthDone }: BouquetSceneProps
   }, []);
   useEffect(() => () => vaseGeo.dispose(), [vaseGeo]);
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     const t = state.clock.elapsedTime;
     const camera = state.camera;
+    const dt = Math.min(delta, 0.05);
 
     // Camera parallax toward the pointer (manual lerp, no OrbitControls).
+    // Frame-rate independent so 60 Hz and 144 Hz ease over the same time.
     const p = cfg.pointer.parallax;
-    camera.position.x += (state.pointer.x * p - camera.position.x) * 0.04;
+    const camBlend = 1 - Math.exp(-dt / cfg.pointer.cameraSmooth);
+    camera.position.x += (state.pointer.x * p - camera.position.x) * camBlend;
     camera.position.y +=
-      (cfg.render.cameraY + state.pointer.y * p * 0.6 - camera.position.y) * 0.04;
+      (cfg.render.cameraY + state.pointer.y * p * 0.6 - camera.position.y) * camBlend;
     camera.lookAt(0, cfg.render.cameraY, 0);
 
     // Pointer projected onto the bouquet plane for proximity tilt.
@@ -282,19 +285,37 @@ export default function BouquetScene({ isMobile, growthDone }: BouquetSceneProps
 
     const group = bouquetRef.current;
     if (!group) return;
+    const leanBlend = 1 - Math.exp(-dt / cfg.pointer.leanSmooth);
     for (const child of group.children) {
-      const ud = child.userData as { phase: number; freq: number; hx: number; hy: number };
+      const ud = child.userData as {
+        phase: number;
+        freq: number;
+        hx: number;
+        hy: number;
+        leanZ: number;
+        leanX: number;
+      };
       const sway = Math.sin(t * ud.freq + ud.phase) * cfg.sway.maxTilt;
 
-      // Extra lean toward a nearby pointer.
+      // Proportional lean: a flower under the cursor barely moves, so passing
+      // over it no longer flips it from one side to the other.
       const dx = pointerWorld.x - ud.hx;
       const dy = pointerWorld.y - ud.hy;
       const dist = Math.hypot(dx, dy);
-      const fall = Math.max(0, 1 - dist / cfg.pointer.proximity);
-      const tilt = fall * fall * cfg.pointer.proximityTilt * Math.sign(dx || 1);
+      let targetZ = 0;
+      let targetX = 0;
+      if (dist < cfg.pointer.proximity) {
+        const fall = 1 - dist / cfg.pointer.proximity;
+        const max = cfg.pointer.proximityTilt;
+        targetZ = THREE.MathUtils.clamp(dx / cfg.pointer.leanReach, -1, 1) * max * fall;
+        targetX = THREE.MathUtils.clamp(dy / cfg.pointer.leanReach, -1, 1) * max * 0.45 * fall;
+      }
+      ud.leanZ = (ud.leanZ || 0) + (targetZ - (ud.leanZ || 0)) * leanBlend;
+      ud.leanX = (ud.leanX || 0) + (targetX - (ud.leanX || 0)) * leanBlend;
 
-      child.rotation.z = sway - tilt;
-      child.rotation.x = Math.sin(t * ud.freq * 0.7 + ud.phase) * cfg.sway.maxTilt * 0.4;
+      child.rotation.z = sway - ud.leanZ;
+      child.rotation.x =
+        Math.sin(t * ud.freq * 0.7 + ud.phase) * cfg.sway.maxTilt * 0.4 + ud.leanX;
     }
   });
 
@@ -333,6 +354,8 @@ export default function BouquetScene({ isMobile, growthDone }: BouquetSceneProps
                   freq: f.freq,
                   hx: f.head.x * scale,
                   hy: f.head.y * scale,
+                  leanZ: 0,
+                  leanX: 0,
                 }}
               >
                 <Stem to={f.local} />

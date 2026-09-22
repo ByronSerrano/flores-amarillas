@@ -35,11 +35,17 @@ export const flowerConfig = {
   /** Pointer interaction. */
   pointer: {
     /** Camera parallax travel, in world units. */
-    parallax: 0.9,
+    parallax: 0.35,
+    /** Seconds for the camera to ease toward the pointer. */
+    cameraSmooth: 0.4,
     /** Distance (world units) under which a flower tilts toward the pointer. */
     proximity: 2.2,
-    /** Max extra tilt (radians) from proximity. */
-    proximityTilt: 0.18,
+    /** Offset (world units) that reaches the full extra tilt. */
+    leanReach: 0.65,
+    /** Max extra tilt (radians). Gentle, and only for a flower beside the pointer. */
+    proximityTilt: 0.12,
+    /** Seconds for a flower to ease toward (and away from) the pointer lean. */
+    leanSmooth: 0.18,
   },
 
   /** Pollen particles per tier. */
