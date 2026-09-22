@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { AdaptiveDpr } from "@react-three/drei";
+import { Mail, RotateCcw } from "lucide-react";
 import BouquetScene from "./BouquetScene";
 import AsciiPostFX from "./AsciiPostFX";
 import { whenFontsReady } from "./shaders/glyphAtlas";
 import Letter from "@/components/Letter/Letter";
+import PaperButton from "@/components/Letter/PaperButton";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useDigitalGrowth } from "@/hooks/useDigitalGrowth";
 import { flowerConfig } from "@/constants/flowerConfig";
@@ -83,30 +85,27 @@ export default function Bouquet() {
         onDismiss={() => setLetterHidden(true)}
       />
 
-      {/* Restore letter — only visible once the letter stage is dismissed */}
       <div
-        className={`absolute right-4 bottom-4 z-30 transition-opacity duration-500 ${
-          letterHidden ? "opacity-100" : "pointer-events-none opacity-0"
+        className={`absolute right-4 bottom-4 z-30 transition-all duration-500 ease-out ${
+          letterHidden
+            ? "translate-y-0 opacity-100"
+            : "pointer-events-none translate-y-3 opacity-0"
         }`}
       >
-        <button
-          type="button"
-          onClick={() => setLetterHidden(false)}
-          className="cursor-pointer rounded-lg border border-stone-300 bg-white/70 px-4 py-2 text-sm text-stone-600 backdrop-blur transition hover:border-stone-400 hover:text-stone-800"
-        >
-          Ver la carta ✉️
-        </button>
+        <PaperButton onClick={() => setLetterHidden(false)}>
+          <Mail size={16} strokeWidth={1.5} />
+          Ver la carta
+        </PaperButton>
       </div>
 
-      {/* Replay the digital-growth reveal */}
-      <button
-        type="button"
+      <PaperButton
+        shape="circle"
         onClick={replay}
         aria-label="Repetir animación"
-        className="absolute top-4 right-4 z-30 cursor-pointer rounded-lg border border-stone-300 bg-white/70 px-3 py-1.5 text-xs text-stone-600 backdrop-blur transition hover:border-stone-400 hover:text-stone-800"
+        className="absolute top-4 right-4 z-30"
       >
-        replay ✨
-      </button>
+        <RotateCcw size={16} strokeWidth={1.5} />
+      </PaperButton>
     </div>
   );
 }

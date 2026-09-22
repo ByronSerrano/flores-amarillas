@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Flower2 } from "lucide-react";
 import Typewriter from "./Typewriter";
+import PaperButton from "./PaperButton";
 import { letterParagraphs, letterTitle } from "@/constants/loveLetter";
 
 interface LetterProps {
@@ -12,9 +14,8 @@ interface LetterProps {
 }
 
 /**
- * Full-screen letter stage shown over the bouquet. Typing is sequential:
- * title first, then each paragraph. Nothing types until the bouquet's
- * initial growth reveal has finished (`growthDone`).
+ * Paper letter over the bouquet. Typing is sequential: title first, then
+ * each paragraph. Nothing types until growth has started.
  */
 export default function Letter({ growthStarted, onDismiss, hidden }: LetterProps) {
   /** 0 = typing title; i+1 = typing paragraph i; done = everything typed. */
@@ -26,58 +27,70 @@ export default function Letter({ growthStarted, onDismiss, hidden }: LetterProps
   return (
     <div
       aria-hidden={hidden}
-      className={`absolute inset-0 z-20 flex items-center justify-center p-4 transition-all duration-700 ${
-        hidden ? "pointer-events-none translate-y-6 opacity-0" : "opacity-100"
+      className={`absolute inset-0 z-20 flex items-center justify-center p-4 ${
+        hidden ? "pointer-events-none" : ""
       }`}
     >
-      <div className="relative flex max-h-[86vh] w-full max-w-xl flex-col overflow-hidden rounded-xl border border-stone-200 bg-[#fffdf7]/95 text-sm leading-relaxed text-stone-700 shadow-[0_12px_40px_rgba(58,50,38,0.10)] backdrop-blur-md sm:text-base">
-        <div className="overflow-y-auto px-8 py-8">
-          <h1 className="mb-6 text-lg font-semibold text-amber-800 sm:text-xl">
-            {start < 0 ? null : (
-              <Typewriter
-                text={letterTitle}
-                speed={18}
-                onComplete={() => setStage(1)}
-              />
-            )}
-            {start < 0 && <span className="opacity-0">.</span>}
-          </h1>
-          {letterParagraphs.map((p, i) => {
-            const active = stage === i + 1;
-            const typed = stage > i + 1;
-            return (
-              <p key={i} className="mb-4 last:mb-2">
-                {start < 0 ? (
-                  <span className="opacity-0">{p}</span>
-                ) : active ? (
-                  <Typewriter
-                    text={p}
-                    speed={32}
-                    onComplete={() => setStage(i + 2)}
-                  />
-                ) : typed ? (
-                  p
-                ) : (
-                  <span className="opacity-0">{p}</span>
-                )}
-              </p>
-            );
-          })}
-        </div>
+      <div
+        className={`absolute inset-0 bg-[#3a3226]/10 transition-opacity duration-700 ${
+          hidden ? "opacity-0" : "opacity-100"
+        }`}
+      />
 
-        <div
-          className={`flex items-center justify-between border-t border-stone-200 px-6 py-4 transition-opacity duration-500 ${
-            allTyped ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          <span className="text-xs text-stone-400">21 de septiembre</span>
-          <button
-            type="button"
-            onClick={onDismiss}
-            className="cursor-pointer rounded-lg border border-amber-300 bg-amber-100/70 px-4 py-2 text-sm text-amber-800 transition hover:bg-amber-200/70 hover:text-amber-900"
+      <div
+        className={`letter-stack relative w-full max-w-xl ${
+          hidden ? "translate-y-10 opacity-0" : "letter-rise translate-y-0 opacity-100"
+        }`}
+      >
+        <div className="relative z-10 flex max-h-[86vh] flex-col overflow-hidden rounded-sm border border-[#eadfce] bg-[#fffdf8] text-sm leading-relaxed text-[#3a3226] shadow-[0_1px_0_rgba(255,255,255,0.8)_inset,0_18px_50px_rgba(58,50,38,0.12)] sm:text-base">
+          <div className="overflow-y-auto px-6 py-8 font-mono sm:px-10 sm:py-10">
+            <p className="mb-6 text-right text-xs tracking-wide text-[#a89880]">
+              21 de septiembre
+            </p>
+            <h1 className="text-lg text-[#6b4a1e] sm:text-xl">
+              {start < 0 ? null : (
+                <Typewriter
+                  text={letterTitle}
+                  speed={18}
+                  onComplete={() => setStage(1)}
+                />
+              )}
+              {start < 0 && <span className="opacity-0">.</span>}
+            </h1>
+            <div className="my-5 h-px bg-[#eadfce]" />
+            {letterParagraphs.map((p, i) => {
+              const active = stage === i + 1;
+              const typed = stage > i + 1;
+              return (
+                <p key={i} className="mb-4 last:mb-2">
+                  {start < 0 ? (
+                    <span className="opacity-0">{p}</span>
+                  ) : active ? (
+                    <Typewriter
+                      text={p}
+                      speed={32}
+                      onComplete={() => setStage(i + 2)}
+                    />
+                  ) : typed ? (
+                    p
+                  ) : (
+                    <span className="opacity-0">{p}</span>
+                  )}
+                </p>
+              );
+            })}
+          </div>
+
+          <div
+            className={`flex justify-center px-6 pb-8 transition-opacity duration-500 ${
+              allTyped ? "opacity-100" : "pointer-events-none opacity-0"
+            }`}
           >
-            Ver las flores 🌻
-          </button>
+            <PaperButton onClick={onDismiss}>
+              <Flower2 size={16} strokeWidth={1.5} />
+              Ver las flores
+            </PaperButton>
+          </div>
         </div>
       </div>
     </div>
