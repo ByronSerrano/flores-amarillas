@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 interface DigitalGrowth {
   /** Eased 0→1 progress, read per-frame (e.g. shader uniform) without re-renders. */
   growthRef: React.MutableRefObject<number>;
+  /** Eased 0→1 ASCII→bouquet cross-fade progress, read per-frame (shader uniform). */
+  fadeRef: React.MutableRefObject<number>;
   /** True during an active/finished reveal, false while replaying. */
   done: boolean;
   /** True once any reveal has ever finished (stays true across replays). */
@@ -20,10 +22,17 @@ interface DigitalGrowth {
  * its own rAF loop so both the shader (via growthRef) and the UI (via
  * `done`) can consume it. The glyph-level "patches" look comes from the
  * noise mask in the ASCII shader; this only supplies the eased value.
+ *
+ * When growth completes (`done` flips true), a second rAF runs the
+ * ASCII→bouquet cross-fade: `fadeRef` eases 0→1 over `fadeDuration`.
+ * Both timelines reset together in `start`, so replay restarts the
+ * whole ritual cleanly (glyphs regrow, then dissolve again).
  */
-export function useDigitalGrowth(duration: number): DigitalGrowth {
+export function useDigitalGrowth(duration: number, fadeDuration: number): DigitalGrowth {
   const growthRef = useRef(0);
+  const fadeRef = useRef(0);
   const rafRef = useRef(0);
+  const fadeRafRef = useRef(0);
   const [done, setDone] = useState(false);
   const [everDone, setEverDone] = useState(false);
 
@@ -32,8 +41,15 @@ export function useDigitalGrowth(duration: number): DigitalGrowth {
     rafRef.current = 0;
   }, []);
 
+  const stopFade = useCallback(() => {
+    if (fadeRafRef.current) cancelAnimationFrame(fadeRafRef.current);
+    fadeRafRef.current = 0;
+  }, []);
+
   const start = useCallback(() => {
     stop();
+    stopFade();
+    fadeRef.current = 0;
     setDone(false);
     growthRef.current = 0;
     const t0 = performance.now();
@@ -48,9 +64,26 @@ export function useDigitalGrowth(duration: number): DigitalGrowth {
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
-  }, [stop, duration]);
+  }, [stop, stopFade, duration]);
+
+  // ASCII → bouquet cross-fade: starts when growth completes, runs once.
+  useEffect(() => {
+    if (!done) return;
+    const t0 = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - t0) / (fadeDuration * 1000));
+      const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; // ease-in-out quad
+      fadeRef.current = e;
+      if (t < 1) fadeRafRef.current = requestAnimationFrame(tick);
+    };
+    fadeRafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (fadeRafRef.current) cancelAnimationFrame(fadeRafRef.current);
+      fadeRafRef.current = 0;
+    };
+  }, [done, fadeDuration]);
 
   useEffect(() => stop, [stop]);
 
-  return { growthRef, done, everDone, start, replay: start };
+  return { growthRef, fadeRef, done, everDone, start, replay: start };
 }

@@ -6,7 +6,9 @@
  * the cell's luminance, picks a glyph from the ramp (density grows with
  * DARKNESS — the paper background stays empty, the bouquet blooms),
  * looks it up in the atlas, and composites ink over paper with the
- * noise-masked tender growth reveal.
+ * noise-masked tender growth reveal. The quad then fades out (uFade
+ * 0→1) over the crisp 3D scene rendered behind it on screen, dissolving
+ * the glyphs into the real bouquet.
  *
  * The v1 CRT look (scanlines, chromatic aberration, glitch bands,
  * phosphor tint) was removed entirely, not zeroed.
@@ -34,6 +36,7 @@ uniform float uRamp;       // glyph count
 uniform vec3 uPaper;       // paper color for empty cells
 uniform vec3 uInk;         // warm ink color
 uniform float uInkDarken;  // 0 = keep scene tint, 1 = flat ink
+uniform float uFade;       // 0 = ASCII entry (opaque quad), 1 = crisp bouquet revealed
 
 float hash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -79,6 +82,9 @@ void main() {
   float gate = smoothstep(0.02, 0.10, 1.0 - l);
 
   vec3 color = mix(uPaper, ink, glyph * reveal * gate);
-  gl_FragColor = vec4(color, 1.0);
+  // Cross-fade: the crisp 3D scene renders to the screen behind this
+  // quad, so fading the quad's alpha dissolves the glyphs into the
+  // real bouquet. At uFade = 0 the quad is fully opaque (entry unchanged).
+  gl_FragColor = vec4(color, 1.0 - uFade);
 }
 `;

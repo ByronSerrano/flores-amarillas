@@ -26,6 +26,8 @@ export const flowerConfig = {
 
   /** Digital growth: seconds from 0 → 1 when (re)triggered. */
   growthDuration: 2.5,
+  /** ASCII → bouquet cross-fade: seconds from growth complete to fully revealed. */
+  fadeDuration: 1.5,
 
   /** Sway: frequency (rad/s) range and max rotation per flower group. */
   sway: { minFreq: 0.6, maxFreq: 1.2, maxTilt: 0.06 },

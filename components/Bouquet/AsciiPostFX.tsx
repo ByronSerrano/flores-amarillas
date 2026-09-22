@@ -9,6 +9,8 @@ import { flowerConfig } from "@/constants/flowerConfig";
 
 interface AsciiPostFXProps {
   growthRef: React.MutableRefObject<number>;
+  /** Eased 0→1 ASCII→bouquet cross-fade (starts when growth completes). */
+  fadeRef: React.MutableRefObject<number>;
   isMobile: boolean;
   /** Resolved font-family string used to draw the glyph atlas. */
   fontFamily: string;
@@ -22,11 +24,23 @@ const cfg = flowerConfig;
  * R3F owns the default render loop, so this component takes over: a
  * `useFrame` with priority >= 1 disables auto-render and manually
  *   1. renders the live scene into a low-res WebGLRenderTarget
- *      (one texel per ASCII cell), then
- *   2. renders a full-screen quad with the asciify ShaderMaterial
- *      (tender glyphs + growth, ink composited over paper) to the screen.
+ *      (one texel per ASCII cell) — the glyph-sampling source,
+ *   2. renders the live scene straight to the screen (crisp bouquet,
+ *      hidden behind the opaque quad while uFade = 0), then
+ *   3. renders a full-screen quad with the asciify ShaderMaterial
+ *      (tender glyphs + growth, ink composited over paper) whose alpha
+ *      is `1 - uFade`, so the cross-fade dissolves the glyphs into the
+ *      crisp bouquet underneath.
+ *
+ * Once the fade completes (uFade = 1) steps 1 and 3 are skipped: the
+ * resting frame is a single crisp scene render at full resolution.
  */
-export default function AsciiPostFX({ growthRef, isMobile, fontFamily }: AsciiPostFXProps) {
+export default function AsciiPostFX({
+  growthRef,
+  fadeRef,
+  isMobile,
+  fontFamily,
+}: AsciiPostFXProps) {
   const size = useThree((s) => s.size);
 
   // Grid derived from container size + cell metrics (R-4): no fixed dims.
@@ -59,6 +73,9 @@ export default function AsciiPostFX({ growthRef, isMobile, fontFamily }: AsciiPo
       new THREE.ShaderMaterial({
         vertexShader: asciifyVertex,
         fragmentShader: asciifyFragment,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false,
         uniforms: {
           uScene: { value: rt.texture },
           uAtlas: { value: atlas.texture },
@@ -68,6 +85,7 @@ export default function AsciiPostFX({ growthRef, isMobile, fontFamily }: AsciiPo
           uPaper: { value: new THREE.Color(cfg.paper) },
           uInk: { value: new THREE.Color(cfg.inkColor) },
           uInkDarken: { value: cfg.inkDarken },
+          uFade: { value: 0 },
         },
       }),
     [rt, atlas],
@@ -108,13 +126,25 @@ export default function AsciiPostFX({ growthRef, isMobile, fontFamily }: AsciiPo
     const material = materialRef.current;
     if (!material) return;
     material.uniforms.uGrowth.value = growthRef.current;
+    material.uniforms.uFade.value = fadeRef.current;
 
-    // 1) scene -> low-res RT
+    // Crisp bouquet on screen: always (it hides behind the opaque quad
+    // during the entry, and IS the resting state once the fade completes).
+    state.gl.setRenderTarget(null);
+    state.gl.render(state.scene, state.camera);
+
+    if (material.uniforms.uFade.value >= 1) return; // resting: glyphs gone
+
+    // 1) scene -> low-res RT (glyph sampling source)
     state.gl.setRenderTarget(rt);
     state.gl.render(state.scene, state.camera);
-    // 2) ascii quad -> screen
+    // 2) ascii quad (alpha 1 - uFade) alpha-blends over the crisp scene.
+    // autoClear stays OFF for this pass: the default clear would wipe the
+    // bouquet just rendered to the framebuffer beneath the quad.
     state.gl.setRenderTarget(null);
+    state.gl.autoClear = false;
     state.gl.render(quadScene, quadCam);
+    state.gl.autoClear = true;
   }, 1);
 
   return null;
