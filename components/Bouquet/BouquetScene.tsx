@@ -321,15 +321,15 @@ export default function BouquetScene({ isMobile, growthDone }: BouquetSceneProps
 
   return (
     <>
-      <hemisphereLight args={["#fff8ee", "#e6d3b4", 0.5]} />
-      <ambientLight intensity={0.32} />
+      <hemisphereLight args={["#fff8ee", "#e6d3b4", 0.35]} />
+      <ambientLight intensity={0.22} />
       <pointLight position={[2.4, 3.8, 4.2]} intensity={110} color="#fff2c4" />
       <pointLight position={[-3.4, 1.4, 2.2]} intensity={36} color="#ffe9b3" />
       {/* Rim from behind so petals separate from the cream paper. */}
       <pointLight position={[0.2, 2.4, -3.6]} intensity={22} color="#fff6dc" />
 
       <group scale={isMobile ? cfg.render.mobileBouquetScale : 1}>
-        {/* Soft contact shadow — no shadow map, reads on paper. */}
+        {/* Flat contact plate. Reads as a small shadow on the paper. */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.34, 0.05]}>
           <circleGeometry args={[0.95, 28]} />
           <meshBasicMaterial color="#c9b59a" transparent opacity={0.38} depthWrite={false} />
