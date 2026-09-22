@@ -24,8 +24,9 @@ export default function Bouquet() {
     family: "monospace",
   });
   const [letterHidden, setLetterHidden] = useState(false);
-  const { growthRef, done, start, replay } = useDigitalGrowth(
+  const { growthRef, fadeRef, done, start, replay } = useDigitalGrowth(
     flowerConfig.growthDuration,
+    flowerConfig.fadeDuration,
   );
 
   useEffect(() => {
@@ -59,7 +60,7 @@ export default function Bouquet() {
           ],
           fov: isMobile ? flowerConfig.render.fovMobile : flowerConfig.render.fov,
         }}
-        gl={{ antialias: false, powerPreference: "high-performance" }}
+        gl={{ antialias: true, powerPreference: "high-performance" }}
       >
         <color attach="background" args={[flowerConfig.paper]} />
         {font.ready && (
@@ -67,6 +68,7 @@ export default function Bouquet() {
             <BouquetScene isMobile={isMobile} growthDone={done} />
             <AsciiPostFX
               growthRef={growthRef}
+              fadeRef={fadeRef}
               isMobile={isMobile}
               fontFamily={font.family}
             />
